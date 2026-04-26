@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "author": "João Gonzales",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 9.6, "left": -4.76, "attrs": {} },
+    {
+      "type": "wokwi-mpu6050",
+      "id": "imu1",
+      "top": 50.98,
+      "left": -121.88,
+      "rotate": 270,
+      "attrs": {}
+    },
+    { "type": "wokwi-servo", "id": "servo1", "top": 94, "left": 163.2, "attrs": {} },
+    {
+      "type": "wokwi-text",
+      "id": "text1",
+      "top": 144,
+      "left": 345.6,
+      "attrs": { "text": "<-- simulando um vibracol" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 323,
+      "left": -19.2,
+      "attrs": { "color": "red", "xray": "1" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text2",
+      "top": 326.4,
+      "left": -297.6,
+      "attrs": { "text": "botão de confirmar missão -->\n" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn2",
+      "top": 380.6,
+      "left": -19.2,
+      "attrs": { "color": "red", "xray": "1" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn3",
+      "top": 438.2,
+      "left": -19.2,
+      "attrs": { "color": "red", "xray": "1" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn4",
+      "top": 495.8,
+      "left": -19.2,
+      "attrs": { "color": "red", "xray": "1" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text3",
+      "top": 384,
+      "left": -297.6,
+      "attrs": { "text": "botão de marcar hidratação -->\n" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text4",
+      "top": 441.6,
+      "left": -288,
+      "attrs": { "text": "botão de cancelar missão -->\n" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text5",
+      "top": 499.2,
+      "left": -201.6,
+      "attrs": { "text": "botão de SOS -->\n" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "imu1:VCC", "esp:3V3", "red", [ "h-38.4", "v-19.28" ] ],
+    [ "imu1:GND", "esp:CMD", "black", [ "h-19.2", "v134.32" ] ],
+    [ "imu1:SDA", "esp:21", "green", [ "h-57.6", "v-57.68", "h288", "v57.6" ] ],
+    [ "imu1:SCL", "esp:22", "magenta", [ "h-48", "v-67.28", "h288", "v57.6" ] ],
+    [ "servo1:GND", "esp:CMD", "black", [ "h-48", "v86.4", "h-124.8", "v-28.8" ] ],
+    [ "servo1:V+", "esp:5V", "red", [ "h-38.4", "v86.5", "h-134.4", "v-28.8" ] ],
+    [ "servo1:PWM", "esp:19", "green", [ "h-28.8", "v86.6", "h-28.8", "v-144" ] ],
+    [ "esp:25", "btn1:1.l", "red", [ "h-19.05", "v220.8" ] ],
+    [ "btn2:1.l", "esp:32", "red", [ "h-9.6", "v-297.6" ] ],
+    [ "esp:GND.2", "btn1:2.r", "black", [ "v0", "h38.4", "v316.8" ] ],
+    [ "esp:GND.2", "btn2:2.r", "black", [ "v0", "h48", "v364.8" ] ],
+    [ "esp:33", "btn3:1.l", "red", [ "h-38.25", "v345.6" ] ],
+    [ "btn3:2.r", "esp:GND.2", "black", [ "h105.8", "v-431.8" ] ],
+    [ "esp:GND.2", "btn4:2.r", "black", [ "v0", "h28.8", "v489.6", "h-9.6" ] ],
+    [ "esp:26", "btn4:1.l", "red", [ "h-47.85", "v384" ] ]
+  ],
+  "dependencies": {}
+}
