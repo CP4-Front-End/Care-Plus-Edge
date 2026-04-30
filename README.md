@@ -54,6 +54,7 @@ flowchart TD
     BROWSER -- "POST /vincular\n?tag=UID&device=step001" --> NFC_SRV
     NFC_SRV -- "PATCH /v2/entities\nnfcId = UID" --> ORION
 ```
+![Diagrama de Arquitetura](./img/arquiteture.png)
 
 ---
 
