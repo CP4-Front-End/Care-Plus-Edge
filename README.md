@@ -1,238 +1,293 @@
-# Pulseira Care Plus
+# Pedômetro Care Plus
 
-> Dispositivo IoT vestível para monitoramento de atividade física com alertas inteligentes via vibração e integração com plataforma FIWARE.
-
----
-
-## Integrantes
-
-| Nome | RM |
-|------|----|
-| Felipe Menezes | RM 566607 |
-| Gabriel Ardito | RM 568318 |
-| João Sarracine | RM 567407 |
-| João Gozado | RM 568166 |
-
----
-
-## Descrição do Projeto
-
-A **Pulseira Care Plus** é um dispositivo vestível baseado em ESP32 que monitora a atividade física do usuário através de um acelerômetro MPU6050. O sistema conta passos em tempo real, calcula a média de passos por minuto e publica esses dados via MQTT para a plataforma FIWARE, onde ficam disponíveis para consulta e análise histórica.
-
-Caso o usuário não atinja a meta de passos dentro de uma janela de tempo configurável, a pulseira aciona um servo motor que simula vibração — funcionando como um alerta tátil para incentivar o movimento.
+Solução IoT de monitoramento de atividade física baseada em ESP32, integrada ao FIWARE via MQTT. O sistema é composto por três módulos independentes: a pulseira pedômetro, o monitor LED de atividade e o vínculo NFC para identificação do usuário.
 
 ---
 
 ## Arquitetura
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     PULSEIRA CARE PLUS                      │
-│                                                             │
-│   ┌──────────┐    I2C     ┌──────────┐                      │
-│   │ MPU6050  │ ─────────> │          │   PWM   ┌─────────┐  │
-│   │  (IMU)   │            │  ESP32   │ ──────> │  Servo  │  │
-│   └──────────┘            │          │         └─────────┘  │
-│                           └────┬─────┘                      │
-└────────────────────────────────│────────────────────────────┘
-                                 │ WiFi / MQTT
-                                 ▼
-                    ┌────────────────────────┐
-                    │    Broker MQTT         │
-                    │    (porta 1883)        │
-                    └────────────┬───────────┘
-                                 │
-                    ┌────────────▼───────────┐
-                    │   IOT Agent MQTT       │
-                    │   (porta 4041)         │
-                    └────────────┬───────────┘
-                                 │
-                    ┌────────────▼───────────┐
-                    │  Orion Context Broker  │
-                    │   (porta 1026)         │
-                    └────────────┬───────────┘
-                                 │
-                    ┌────────────▼───────────┐
-                    │      STH-Comet         │
-                    │  Histórico de dados    │
-                    │   (porta 8666)         │
-                    └────────────────────────┘
-```
-
----
-
-## Componentes
-
-| Componente | Função |
-|------------|--------|
-| ESP32 DevKit C v4 | Microcontrolador principal — processa dados, gerencia WiFi e MQTT |
-| MPU6050 (IMU) | Acelerômetro + giroscópio — detecta movimento e conta passos |
-| Servo Motor | Simula vibração como alerta tátil ao usuário |
-
----
-
-## Conexões
-
-### MPU6050 → ESP32
-
-| MPU6050 | ESP32 | Cor |
-|---------|-------|-----|
-| VCC | 3V3 | Vermelho |
-| GND | GND | Preto |
-| SDA | GPIO 21 | Verde |
-| SCL | GPIO 22 | Magenta |
-
-### Servo Motor → ESP32
-
-| Servo | ESP32 | Cor |
-|-------|-------|-----|
-| GND | GND | Preto |
-| V+ | 5V | Vermelho |
-| PWM | GPIO 19 | Verde |
-
----
-
-## Integração MQTT / FIWARE
-
-### Identificação do dispositivo
-
-```
-Device ID:   step001
-Entity Name: urn:ngsi-ld:Pedometer:001
-Entity Type: Pedometer
-```
-
-### Tópicos MQTT
-
-| Direção | Tópico | Descrição |
-|---------|--------|-----------|
-| Publish | `/TEF/step001/attrs/p` | Passos totais na janela |
-| Publish | `/TEF/step001/attrs/m` | Média de passos por minuto |
-| Subscribe | `/TEF/step001/cmd` | Comandos recebidos (ex: `step001@agua\|`) |
-
-### Atributos no Orion
-
-| object_id | Nome | Tipo | Descrição |
-|-----------|------|------|-----------|
-| `p` | `steps` | Integer | Passos acumulados na janela atual |
-| `m` | `steps_per_minute` | Float | Média de passos/min nos últimos 10s |
-
-### Fluxo de dados
-
 ```mermaid
-graph LR
-    A[MPU6050] --> B[Deteccao de Passo]
-    B --> C[Contador de Passos]
-    C --> D[Janela de 10s]
-    D --> E[Calculo Media passos/min]
-    D --> F[Acumulo Passos Totais]
-    E --> G[Publish MQTT /attrs/m]
-    F --> H[Publish MQTT /attrs/p]
-    G --> I[IOT Agent MQTT]
-    H --> I
-    I --> J[Orion Context Broker]
-    J --> K[STH-Comet Historico]
-    B --> L{Meta atingida?}
-    L -- Nao --> M[Servo Vibra]
-    L -- Sim --> N[Servo Para]
-    M --> O[Aguarda proximo passo]
-    O --> N
+flowchart TD
+    subgraph PULSEIRA["Pulseira Pedômetro (ESP32)"]
+        MPU["MPU-6050\nAcelerômetro"]
+        SERVO["Servo Motor\nVibração"]
+        BTNS["Botões\nMissão / Água / SOS"]
+        TAG["NTAG213\nTag NFC passiva"]
+        ESP1["ESP32\nwokwiSimulator.ino"]
+        MPU --> ESP1
+        BTNS --> ESP1
+        ESP1 --> SERVO
+    end
+
+    subgraph MONITOR["Monitor LED (ESP32)"]
+        ESP2["ESP32\nled_monitor.ino"]
+        LED["LED RGB\nAzul / Amarelo / Verde"]
+        ESP2 --> LED
+    end
+
+    subgraph CELULAR["Celular do Usuário"]
+        NFC["Leitura NFC\nnativa do celular"]
+        BROWSER["Browser\nPágina de confirmação"]
+        NFC --> BROWSER
+    end
+
+    subgraph FIWARE["Stack FIWARE (Docker)"]
+        MOSQUITTO["Mosquitto\nBroker MQTT :1883"]
+        IOTA["IoT Agent UltraLight\n:4041"]
+        ORION["Orion Context Broker\n:1026"]
+        STH["STH-Comet\nHistórico :8666"]
+        MONGO["MongoDB\nPersistência"]
+        NFC_SRV["nfc_vincular.py\n:8080"]
+
+        MOSQUITTO --> IOTA
+        IOTA --> ORION
+        ORION --> STH
+        STH --> MONGO
+        ORION --> MONGO
+    end
+
+    ESP1 -- "MQTT\n/ul/TEF/step001/attrs\np|steps|m|media" --> MOSQUITTO
+    MOSQUITTO -- "MQTT\n/TEF/step001/cmd" --> ESP1
+    MOSQUITTO -- "MQTT\n/ul/TEF/step001/attrs" --> ESP2
+
+    TAG -. "Abre URL\nautomaticamente" .-> NFC
+    BROWSER -- "POST /vincular\n?tag=UID&device=step001" --> NFC_SRV
+    NFC_SRV -- "PATCH /v2/entities\nnfcId = UID" --> ORION
 ```
 
 ---
 
-## Lógica de Funcionamento
+## Módulos
 
-### Detecção de passos
+### 1. Pulseira Pedômetro (`wokwiSimulator.ino`)
+ESP32 com acelerômetro MPU-6050. Detecta passos, calcula média de passos por minuto, controla vibração por servo motor e gerencia botões de interação. Publica dados no broker MQTT e integra ao FIWARE via IoT Agent UltraLight.
 
-O MPU6050 fornece aceleração nos três eixos (X, Y, Z). O algoritmo calcula a variação brusca do vetor resultante (`delta = total - anterior`). Quando essa variação ultrapassa o threshold de `3 m/s²` com intervalo mínimo de `500ms` entre passos, um passo é registrado.
+### 2. Monitor LED (`led_monitor.ino`)
+ESP32 independente com LED RGB. Recebe `steps_per_minute` via MQTT e indica visualmente o nível de atividade por cor:
 
-Esse método de detecção por delta é mais robusto que threshold absoluto — funciona independente da orientação do dispositivo.
+| Faixa | Cor | Significado |
+|-------|-----|-------------|
+| 0 p/min | Apagado | Sem atividade |
+| 1–10 p/min | Azul | Atividade baixa |
+| 11–20 p/min | Amarelo | Atividade média |
+| 21+ p/min | Verde | Meta atingida |
 
-### Janela de meta
-
-| Parâmetro | Valor padrão | Variável |
-|-----------|-------------|----------|
-| Meta de passos | 10 passos | `PASSOS_MINIMOS` |
-| Duração da janela | 30 segundos | `JANELA_MS` |
-| Intervalo de publicação | 10 segundos | `PUBLISH_MS` |
-
-Ao encerrar a janela, se o usuário não atingiu a meta, o servo inicia a vibração. A vibração para imediatamente ao detectar o primeiro passo.
-
-### Comandos recebidos
-
-O dispositivo escuta o tópico `/TEF/step001/cmd`. O formato do payload segue o padrão UltraLight do FIWARE:
-
-```
-step001@agua|
-```
-
-Comandos implementados:
-
-| Comando | Comportamento |
-|---------|--------------|
-| `agua` | (estrutura implementada, vibração específica a definir) |
+### 3. Vínculo NFC (`nfc_vincular.py`)
+Servidor web Python que recebe a leitura de uma tag NTAG213 pelo celular do usuário e registra o vínculo `UID <-> dispositivo` no Orion Context Broker. O celular abre a página automaticamente ao encostar na tag — sem app necessário.
 
 ---
 
-## Estrutura do Repositório
+## Hardware
 
+<table>
+<tr>
+<td valign="top" width="50%">
+
+### Pulseira Pedômetro
+
+| Componente | Especificação |
+|------------|--------------|
+| Microcontrolador | ESP32 DevKit V1 |
+| Acelerômetro | MPU-6050 (I2C) |
+| Atuador | Servo Motor |
+| Botões | 4x push button |
+| Tag NFC | NTAG213 (passiva) |
+
+</td>
+<td valign="top" width="50%">
+
+### Monitor LED
+
+| Componente | Especificação |
+|------------|--------------|
+| Microcontrolador | ESP32 DevKit V1 |
+| LED | RGB cátodo comum |
+| Resistores | 3x 220 Ohm |
+
+</td>
+</tr>
+</table>
+
+---
+
+## Pinagem
+
+<table>
+<tr>
+<td valign="top" width="50%">
+
+### Pulseira Pedômetro
+
+| Pino | Função |
+|------|--------|
+| GPIO 21/22 | MPU-6050 (SDA/SCL) |
+| GPIO 19 | Servo Motor |
+| GPIO 25 | Botão Missão OK |
+| GPIO 32 | Botão Missão Saiu |
+| GPIO 33 | Botão Água |
+| GPIO 26 | Botão SOS |
+
+</td>
+<td valign="top" width="50%">
+
+### Monitor LED
+
+| Pino | Função |
+|------|--------|
+| GPIO 25 | LED RGB Vermelho |
+| GPIO 26 | LED RGB Verde |
+| GPIO 27 | LED RGB Azul |
+
+</td>
+</tr>
+</table>
+
+---
+
+## Tópicos MQTT
+
+| Tópico | Direção | Conteúdo |
+|--------|---------|---------|
+| `/ul/TEF/step001/attrs` | ESP32 -> Broker | `p\|passos\|m\|media` |
+| `/TEF/step001/cmd` | Broker -> ESP32 | Comandos (ex: `step001@agua\|`) |
+
+---
+
+## Stack FIWARE
+
+| Serviço | Porta | Função |
+|---------|-------|--------|
+| Orion Context Broker | 1026 | Gerenciamento de entidades |
+| IoT Agent UltraLight | 4041 | Tradução MQTT -> NGSI |
+| STH-Comet | 8666 | Histórico de dados |
+| Mosquitto | 1883 | Broker MQTT |
+| MongoDB | 27017 | Persistência |
+| nfc_vincular.py | 8080 | Vínculo NFC -> Orion |
+
+### Executar o stack completo
+
+```bash
+docker-compose up -d
 ```
-pulseira-care-plus/
-├── firmware/
-│   └── sketch.ino                               # Código do ESP32
-├── postman/
-│   └── FIWARE-Pedometro.postman_collection.json # Collection Postman
-├── wokwi/
-│   └── diagram.json                             # Diagrama de conexões Wokwi
-└── README.md
+
+> O serviço `nfc-vincular` é buildado localmente a partir do `Dockerfile` incluído no repositório. Os demais serviços utilizam imagens públicas.
+
+### Variáveis de ambiente — nfc_vincular
+
+| Variável | Padrão | Descrição |
+|----------|--------|-----------|
+| `FIWARE_IP` | `35.247.231.140` | IP ou hostname do Orion |
+| `ORION_PORT` | `1026` | Porta do Orion |
+| `SERVER_PORT` | `8080` | Porta do servidor NFC |
+
+---
+
+## Fluxo de Dados
+
+### Vínculo NFC
+```
+Celular encosta na pulseira (NTAG213)
+→ browser abre GET /vincular?tag=UID&device=urn:ngsi-ld:Pedometer:001
+→ exibe página de confirmação
+→ usuário clica "Confirmar vínculo"
+→ browser envia POST /vincular (body: tag + device)
+→ nfc_vincular.py faz PATCH no Orion
+→ atributo nfcId atualizado com UID + timestamp
+→ browser exibe confirmação de sucesso
+```
+
+### LED Monitor
+```
+ESP32 LED subscreve /ul/TEF/step001/attrs via MQTT
+→ extrai campo m| (steps_per_minute)
+→ 0 p/min       → LED apagado
+→ 1–10 p/min    → LED azul (baixo esforço)
+→ 11–20 p/min   → LED amarelo (esforço médio)
+→ 21+ p/min     → LED verde (meta atingida)
 ```
 
 ---
 
-## Como Executar
+## Interface de Vínculo NFC
 
-### 1. Simulação (Wokwi)
+Quando o celular encosta na pulseira, o browser abre automaticamente a interface StepCare.
 
-1. Acesse [wokwi.com](https://wokwi.com/projects/462390704231379969) e crie um novo projeto ESP32
-2. Importe o `diagram.json` da pasta `wokwi/`
-3. Cole o conteúdo de `firmware/sketch.ino`
-4. Ajuste `BROKER_MQTT` no código para o IP do seu servidor
-5. Clique em **Start Simulation**
-6. Para simular passos: clique no MPU6050 e mova o slider do eixo Z abruptamente
+<table>
+<tr>
+<td align="center" width="50%">
 
-### 2. Configuração do FIWARE
+### Tela de confirmação
+O usuário visualiza o dispositivo detectado e confirma o vínculo.
 
-Importe a collection `FIWARE-Pedometro.postman_collection.json` no Postman e execute na ordem:
+<img src="./img/mobile1.png" width="260"/>
 
-```
-1. IOT Agent → 1. Health Check
-2. IOT Agent → 2. Provisioning Service Group
-3. IOT Agent → 3. Provisioning Pedômetro
-4. [Inicie o firmware]
-5. Orion → 2. Get Estado Atual
-6. STH-Comet → 2. Subscrever Passos Totais
-7. STH-Comet → 3. Subscrever Média Passos/min
-8. STH-Comet → 4 e 5. Consultar histórico
-```
+</td>
+<td align="center" width="50%">
 
-> Configure a variável `{{url}}` no Postman Environment com o IP do servidor FIWARE.
+### Tela de sucesso
+Após confirmar, o sistema registra o vínculo no Orion e exibe a confirmação com dispositivo, tag NFC e horário.
+
+<img src="./img/mobile2.png" width="260"/>
+
+</td>
+</tr>
+</table>
 
 ---
 
-## Dependências (firmware)
+## Entidade FIWARE
 
-```cpp
-#include <Adafruit_MPU6050.h>
-#include <Adafruit_Sensor.h>
-#include <Wire.h>
-#include <WiFi.h>
-#include <PubSubClient.h>
+```
+ID:   urn:ngsi-ld:Pedometer:001
+Tipo: Pedometer
 ```
 
-Instale via Arduino Library Manager:
-- `Adafruit MPU6050`
-- `Adafruit Unified Sensor`
-- `PubSubClient` (Nick O'Leary)
+| Atributo | Tipo | Descrição |
+|----------|------|-----------|
+| `steps` | Integer | Passos totais na janela |
+| `steps_per_minute` | Float | Média de passos por minuto |
+| `button_event` | Text | Último evento de botão |
+| `nfcId` | Text | UID da tag NFC vinculada |
 
 ---
+
+## Simulação
+
+| Módulo | Link |
+|--------|------|
+| Pulseira Pedômetro | [Wokwi - Pedômetro](https://wokwi.com/projects/462390704231379969) |
+| Monitor LED | [Wokwi - Luminária](https://wokwi.com/projects/458699894496782337) |
+
+> O componente MFRC522 exibido no diagrama da pulseira representa a tag NTAG213 passiva. Tags NFC não se conectam ao ESP32 — a leitura é feita pelo celular do usuário.
+
+---
+
+## Modificações em relação ao projeto base
+
+Este projeto é derivado do [FIWARE Descomplicado](https://github.com/fabiocabrini/fiware.git) do Prof. Fábio Henrique Cabrini. As seguintes modificações foram realizadas:
+
+- `docker-compose.yml` — adicionado o serviço `nfc-vincular` (porta 8080)
+- `Dockerfile` — imagem customizada Python 3.11 para o servidor NFC
+- Nenhuma alteração nas imagens Docker originais do FIWARE
+
+---
+
+## Créditos
+
+Este projeto é uma variação do **[FIWARE Descomplicado](https://github.com/fabiocabrini/fiware)**, desenvolvido pelo **Prof. Fábio Henrique Cabrini** da FIAP. O projeto original fornece a infraestrutura base para integração de dispositivos IoT com a plataforma FIWARE, utilizando MQTT, Orion Context Broker e IoT Agent UltraLight.
+
+A partir dessa base, foram adicionados os módulos de pedômetro com ESP32, vínculo de usuário via NFC e monitor LED de atividade física. Todo o crédito pela arquitetura e stack FIWARE é do professor.
+
+> 📎 Repositório original: [github.com/fabiocabrini/fiware](https://github.com/fabiocabrini/fiware)
+
+---
+
+## Autores
+
+| Nome | Função |
+|------|--------|
+| Prof. Fábio Henrique Cabrini | Código base e FIWARE Descomplicado |
+| Gabriel Ardito | Desenvolvimento |
+| Felipe Menezes | Desenvolvimento |
+| João Sarracine | Desenvolvimento |
+| João Gonzales | Desenvolvimento |
