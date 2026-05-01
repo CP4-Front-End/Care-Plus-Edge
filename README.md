@@ -5,7 +5,9 @@ Solução IoT de monitoramento de atividade física baseada em ESP32, integrada 
 ---
 
 ## Arquitetura
+![Diagrama de Arquitetura](./img/arquiteture.jpg)
 
+# Fluxo de dados:
 ```mermaid
 flowchart TD
     subgraph PULSEIRA["Pulseira Pedômetro (ESP32)"]
@@ -54,7 +56,7 @@ flowchart TD
     BROWSER -- "POST /vincular\n?tag=UID&device=step001" --> NFC_SRV
     NFC_SRV -- "PATCH /v2/entities\nnfcId = UID" --> ORION
 ```
-![Diagrama de Arquitetura](./img/arquiteture.jpg)
+
 
 ---
 
