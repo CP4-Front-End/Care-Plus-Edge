@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   # MongoDB HISTÓRICO (com autenticação) - usado pelo STH Comet
   mongo-db-historical:

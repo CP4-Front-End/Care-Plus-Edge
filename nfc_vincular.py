@@ -18,7 +18,7 @@ import json
 import datetime
 import os
 # ── Configuração ───────────────────────────────────────────────────────────────
-FIWARE_IP   = os.environ.get("FIWARE_IP", "35.247.231.140")
+FIWARE_IP   = os.environ.get("FIWARE_IP", "136.113.59.15")
 ORION_PORT  = int(os.environ.get("ORION_PORT", 1026))
 SERVER_PORT = int(os.environ.get("SERVER_PORT", 8080))
 ORION_BASE  = f"http://{FIWARE_IP}:{ORION_PORT}/v2/entities"
@@ -465,7 +465,7 @@ HTML_ERRO = """<!DOCTYPE html>
 
 
 def patch_nfc_id(device_id: str, nfc_id: str, nome: str = "") -> tuple[bool, str]:
-    url = f"{ORION_BASE}/{urllib.parse.quote(device_id)}/attrs"
+    url = f"{ORION_BASE}/{urllib.parse.quote(device_id, safe='')}/attrs"
     payload = {
         "nfcId": {
             "value": nfc_id,
@@ -476,13 +476,12 @@ def patch_nfc_id(device_id: str, nfc_id: str, nome: str = "") -> tuple[bool, str
                     "type": "DateTime"
                 }
             }
-        }
-    }
-    if nome:
-        payload["name"] = {
+        },
+        "name": {
             "value": nome,
             "type": "Text"
         }
+    }
     headers = {
         "Content-Type":       "application/json",
         "fiware-service":     "smart",
@@ -492,11 +491,6 @@ def patch_nfc_id(device_id: str, nfc_id: str, nome: str = "") -> tuple[bool, str
         r = requests.patch(url, data=json.dumps(payload), headers=headers, timeout=5)
         if r.status_code == 204:
             return True, "ok"
-        if r.status_code == 422:
-            r2 = requests.post(url, data=json.dumps(payload), headers=headers, timeout=5)
-            if r2.status_code in (200, 201, 204):
-                return True, "ok (atributo criado)"
-            return False, f"Orion {r2.status_code}: {r2.text}"
         if r.status_code == 404:
             return False, f"Entidade '{device_id}' não encontrada no Orion."
         return False, f"Orion {r.status_code}: {r.text}"
