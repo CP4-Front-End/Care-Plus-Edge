@@ -30,321 +30,89 @@ HTML_CONFIRM = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Vincular Dispositivo</title>
+  <title>Vincular Pulseira</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-
     :root {{
-      --bg:        #F0F4F8;
-      --surface:   #FFFFFF;
-      --primary:   #0A6E6E;
-      --primary-l: #E6F3F3;
-      --accent:    #00B4A2;
-      --text:      #1A2B3C;
-      --muted:     #6B7C93;
-      --border:    #D9E3EC;
-      --danger:    #E05A5A;
-      --radius:    20px;
+      --bg: #F4F6F8;
+      --surface: #FFFFFF;
+      --primary: #1c9770;
+      --primary-dark: #167a5a;
+      --primary-subtle: rgba(28,151,112,0.08);
+      --primary-border: rgba(28,151,112,0.2);
+      --text: #1A202C;
+      --muted: #6B7685;
+      --border: #E4E7EB;
+      --radius-sm: 8px;
+      --radius-md: 12px;
     }}
-
-    html, body {{
-      height: 100%;
-      background: var(--bg);
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
-    }}
-
-    body {{
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 24px;
-    }}
-
-    .wrap {{
-      width: 100%;
-      max-width: 400px;
-      animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }}
-
-    @keyframes rise {{
-      from {{ opacity: 0; transform: translateY(24px); }}
-      to   {{ opacity: 1; transform: translateY(0); }}
-    }}
-
-    .brand {{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 28px;
-    }}
-
-    .brand-icon {{
-      width: 36px; height: 36px;
-      background: var(--primary);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }}
-
-    .brand-icon svg {{ width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }}
-
-    .brand-name {{
-      font-family: 'DM Serif Display', serif;
-      font-size: 20px;
-      color: var(--primary);
-      letter-spacing: -0.3px;
-    }}
-
-    .card {{
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 36px 32px 32px;
-      box-shadow: 0 4px 24px rgba(10,110,110,0.08), 0 1px 4px rgba(0,0,0,0.04);
-    }}
-
-    .nfc-icon {{
-      width: 72px; height: 72px;
-      background: var(--primary-l);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 24px;
-      position: relative;
-    }}
-
-    .nfc-icon svg {{ width: 36px; height: 36px; }}
-
-    .nfc-icon::before, .nfc-icon::after {{
-      content: '';
-      position: absolute;
-      border-radius: 50%;
-      border: 2px solid var(--accent);
-      opacity: 0;
-      animation: ripple 2.4s ease-out infinite;
-    }}
-    .nfc-icon::before {{ width: 92px; height: 92px; animation-delay: 0s; }}
-    .nfc-icon::after  {{ width: 116px; height: 116px; animation-delay: 0.6s; }}
-
-    @keyframes ripple {{
-      0%   {{ opacity: 0.5; transform: scale(0.85); }}
-      100% {{ opacity: 0;   transform: scale(1.1); }}
-    }}
-
-    .question {{
-      font-family: 'DM Serif Display', serif;
-      font-size: 22px;
-      line-height: 1.3;
-      color: var(--text);
-      text-align: center;
-      margin-bottom: 8px;
-      letter-spacing: -0.3px;
-    }}
-
-    .sub {{
-      font-size: 14px;
-      color: var(--muted);
-      text-align: center;
-      line-height: 1.6;
-      margin-bottom: 28px;
-    }}
-
-    .device-info {{
-      background: var(--primary-l);
-      border: 1px solid #C2DEDE;
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }}
-
-    .device-dot {{
-      width: 10px; height: 10px;
-      background: var(--accent);
-      border-radius: 50%;
-      flex-shrink: 0;
-      animation: pulse-dot 2s ease-in-out infinite;
-      box-shadow: 0 0 0 3px rgba(0,180,162,0.2);
-    }}
-
-    @keyframes pulse-dot {{
-      0%, 100% {{ box-shadow: 0 0 0 3px rgba(0,180,162,0.2); }}
-      50%       {{ box-shadow: 0 0 0 6px rgba(0,180,162,0.1); }}
-    }}
-
-    .device-text {{ flex: 1; }}
-    .device-label {{ font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }}
-    .device-id    {{ font-size: 15px; font-weight: 600; color: var(--primary); margin-top: 2px; }}
-
-    .field {{
-      margin-bottom: 28px;
-    }}
-    .field-label {{
-      display: block;
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }}
-    .field-input {{
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      color: var(--text);
-      background: var(--bg);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }}
-    .field-input:focus {{
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(10,110,110,0.12);
-    }}
-    .field-input::placeholder {{
-      color: #A0AEBB;
-    }}
-    .btn-confirm {{
-      width: 100%;
-      padding: 16px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-      box-shadow: 0 4px 16px rgba(10,110,110,0.25);
-      margin-bottom: 12px;
-      position: relative;
-      overflow: hidden;
-    }}
-
-    .btn-confirm:hover  {{ background: #085c5c; box-shadow: 0 6px 20px rgba(10,110,110,0.32); }}
-    .btn-confirm:active {{ transform: scale(0.98); }}
-    .btn-confirm.loading {{ pointer-events: none; }}
-    .btn-confirm.loading span {{ opacity: 0; }}
-    .btn-confirm.loading::after {{
-      content: '';
-      position: absolute;
-      inset: 0; margin: auto;
-      width: 22px; height: 22px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }}
-
-    @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
-
-    .btn-cancel {{
-      width: 100%;
-      padding: 14px;
-      background: transparent;
-      color: var(--muted);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-    }}
-
-    .btn-cancel:hover {{ border-color: var(--danger); color: var(--danger); }}
-
-    .uid-badge {{
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 20px;
-    }}
-
-    .uid-badge span {{ font-size: 11px; color: #A0AEBB; font-family: monospace; letter-spacing: 0.05em; }}
-    .uid-dot {{ width: 4px; height: 4px; background: #C8D5E0; border-radius: 50%; }}
+    html, body {{ height:100%; background:var(--bg); font-family:'Roboto',sans-serif; color:var(--text); -webkit-font-smoothing:antialiased; }}
+    body {{ display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }}
+    .wrap {{ width:100%; max-width:420px; animation:rise 0.4s cubic-bezier(0.22,1,0.36,1) both; }}
+    @keyframes rise {{ from {{ opacity:0; transform:translateY(20px); }} to {{ opacity:1; transform:translateY(0); }} }}
+    .brand {{ display:flex; align-items:center; gap:10px; margin-bottom:20px; }}
+    .brand-icon {{ width:36px; height:36px; background:var(--primary); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; }}
+    .brand-icon svg {{ width:18px; height:18px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; }}
+    .brand-name {{ font-size:18px; font-weight:700; color:var(--primary); letter-spacing:-0.3px; }}
+    .card {{ background:var(--surface); border-radius:var(--radius-md); border:1px solid var(--border); padding:32px 28px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }}
+    .nfc-wrap {{ display:flex; justify-content:center; margin-bottom:24px; }}
+    .nfc-circle {{ width:64px; height:64px; background:var(--primary-subtle); border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; }}
+    .nfc-circle svg {{ width:30px; height:30px; fill:none; stroke:var(--primary); stroke-width:2; stroke-linecap:round; }}
+    .nfc-circle::before, .nfc-circle::after {{ content:''; position:absolute; border-radius:50%; border:1.5px solid var(--primary); opacity:0; animation:ripple 2.4s ease-out infinite; }}
+    .nfc-circle::before {{ width:84px; height:84px; animation-delay:0s; }}
+    .nfc-circle::after  {{ width:108px; height:108px; animation-delay:0.7s; }}
+    @keyframes ripple {{ 0% {{ opacity:0.4; transform:scale(0.85); }} 100% {{ opacity:0; transform:scale(1.1); }} }}
+    h1 {{ font-size:20px; font-weight:700; color:var(--text); text-align:center; margin-bottom:6px; }}
+    .sub {{ font-size:13px; color:var(--muted); text-align:center; line-height:1.6; margin-bottom:24px; }}
+    .device-row {{ background:var(--primary-subtle); border:1px solid var(--primary-border); border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:10px; }}
+    .device-dot {{ width:8px; height:8px; background:var(--primary); border-radius:50%; flex-shrink:0; box-shadow:0 0 0 3px rgba(28,151,112,0.2); animation:pulse-dot 2s ease-in-out infinite; }}
+    @keyframes pulse-dot {{ 0%,100% {{ box-shadow:0 0 0 3px rgba(28,151,112,0.2); }} 50% {{ box-shadow:0 0 0 6px rgba(28,151,112,0.08); }} }}
+    .device-label {{ font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; }}
+    .device-id {{ font-size:13px; font-weight:700; color:var(--primary); margin-top:2px; font-family:monospace; }}
+    .field {{ margin-bottom:20px; }}
+    .field-label {{ display:block; font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }}
+    .field-input {{ width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); font-family:'Roboto',sans-serif; font-size:14px; color:var(--text); background:var(--bg); outline:none; transition:border-color 150ms ease, box-shadow 150ms ease; }}
+    .field-input:focus {{ border-color:var(--primary); box-shadow:0 0 0 3px rgba(28,151,112,0.12); }}
+    .field-input::placeholder {{ color:#9BA3AE; }}
+    .btn-confirm {{ width:100%; padding:13px; background:var(--primary); color:#fff; border:none; border-radius:var(--radius-sm); font-family:'Roboto',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:opacity 150ms ease, transform 100ms ease; }}
+    .btn-confirm:hover {{ opacity:0.92; }}
+    .btn-confirm:active {{ transform:scale(0.98); }}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-      </div>
-      <span class="brand-name">StepCare</span>
+      <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <span class="brand-name">BoostCare</span>
     </div>
-
     <div class="card">
-      <div class="nfc-icon">
-        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="24" cy="24" r="10" fill="#0A6E6E" opacity="0.12"/>
-          <circle cx="24" cy="24" r="5"  fill="#0A6E6E"/>
-          <path d="M13 24a11 11 0 0 1 11-11" stroke="#00B4A2" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M35 24a11 11 0 0 1-11 11" stroke="#00B4A2" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M8  24a16 16 0 0 1 16-16" stroke="#0A6E6E" stroke-width="2"   stroke-linecap="round" opacity="0.4"/>
-          <path d="M40 24a16 16 0 0 1-16 16" stroke="#0A6E6E" stroke-width="2"   stroke-linecap="round" opacity="0.4"/>
-        </svg>
+      <div class="nfc-wrap">
+        <div class="nfc-circle">
+          <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 0-8-8"/><path d="M4 12a8 8 0 0 0 8 8"/><path d="M17 12a5 5 0 0 0-5-5"/><path d="M7 12a5 5 0 0 0 5 5"/><circle cx="12" cy="12" r="1.5" fill="var(--primary)" stroke="none"/></svg>
+        </div>
       </div>
-
-      <h1 class="question">Deseja vincular seu dispositivo à Pulseira?</h1>
-      <p class="sub">Digite um nome para identificar sua pulseira e confirme o vínculo.</p>
-
-      <div class="device-info">
+      <h1>Vincular pulseira</h1>
+      <p class="sub">Tag detectada. Confirme o apelido e clique em vincular.</p>
+      <div class="device-row">
         <div class="device-dot"></div>
-        <div class="device-text">
+        <div>
           <div class="device-label">Dispositivo</div>
           <div class="device-id">{device_id}</div>
         </div>
       </div>
-
-      <div class="field">
-        <label class="field-label" for="nomeInput">Apelido da pulseira</label>
-        <input class="field-input" id="nomeInput" type="text" placeholder="Ex: Pulseira do João" maxlength="60" autocomplete="off">
-      </div>
-
-      <button class="btn-confirm" id="btnConfirm" onclick="confirmar()">
-        <span>Confirmar vínculo</span>
-      </button>
-      <button class="btn-cancel" onclick="cancelar()">Cancelar</button>
-
-      <div class="uid-badge">
-        <span>TAG</span>
-        <div class="uid-dot"></div>
-        <span>{nfc_id}</span>
-      </div>
+      <form method="get" action="/confirmar">
+        <input type="hidden" name="tag"    value="{nfc_id}">
+        <input type="hidden" name="device" value="{device_id}">
+        <div class="field">
+          <label class="field-label" for="nome">Apelido da pulseira</label>
+          <input class="field-input" id="nome" name="nome" type="text" placeholder="Ex: Pulseira da Ana" autocomplete="off" autofocus>
+        </div>
+        <button class="btn-confirm" type="submit">Vincular agora</button>
+      </form>
     </div>
   </div>
-
-  <script>
-    function confirmar() {{
-      const nome = document.getElementById('nomeInput').value.trim();
-      if (!nome) {{
-        document.getElementById('nomeInput').focus();
-        document.getElementById('nomeInput').style.borderColor = 'var(--danger)';
-        return;
-      }}
-      const btn = document.getElementById('btnConfirm');
-      btn.classList.add('loading');
-      fetch('/confirmar?tag={nfc_id}&device={device_id}&nome=' + encodeURIComponent(nome))
-        .then(r => r.text())
-        .then(html => {{ document.open('text/html','replace'); document.write(html); }})
-        .catch(() => {{ btn.classList.remove('loading'); alert('Erro de conexão. Tente novamente.'); }});
-    }}
-    function cancelar() {{
-      document.querySelector('.card').style.opacity = '0.4';
-      document.querySelector('.card').style.transition = '0.3s';
-      document.querySelector('.card').style.pointerEvents = 'none';
-      document.querySelector('.question').textContent = 'Operação cancelada.';
-    }}
-  </script>
 </body>
 </html>"""
 
@@ -354,53 +122,47 @@ HTML_SUCESSO = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Vinculado</title>
+  <title>Pulseira Vinculada</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    :root {{ --primary:#0A6E6E; --accent:#00B4A2; --bg:#F0F4F8; --surface:#fff; --text:#1A2B3C; --muted:#6B7C93; }}
-    html, body {{ height:100%; background:var(--bg); font-family:'DM Sans',sans-serif; -webkit-font-smoothing:antialiased; }}
+    *, *::before, *::after {{ box-sizing:border-box; margin:0; padding:0; }}
+    :root {{ --bg:#F4F6F8; --surface:#fff; --primary:#1c9770; --primary-subtle:rgba(28,151,112,0.08); --primary-border:rgba(28,151,112,0.2); --text:#1A202C; --muted:#6B7685; --border:#E4E7EB; }}
+    html, body {{ height:100%; background:var(--bg); font-family:'Roboto',sans-serif; -webkit-font-smoothing:antialiased; }}
     body {{ display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }}
-    .wrap {{ width:100%; max-width:400px; animation:rise 0.5s cubic-bezier(0.22,1,0.36,1) both; }}
-    @keyframes rise {{ from {{ opacity:0; transform:translateY(24px); }} to {{ opacity:1; transform:translateY(0); }} }}
-    .brand {{ display:flex; align-items:center; gap:10px; margin-bottom:28px; }}
-    .brand-icon {{ width:36px; height:36px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; }}
+    .wrap {{ width:100%; max-width:420px; animation:rise 0.4s cubic-bezier(0.22,1,0.36,1) both; }}
+    @keyframes rise {{ from {{ opacity:0; transform:translateY(20px); }} to {{ opacity:1; transform:translateY(0); }} }}
+    .brand {{ display:flex; align-items:center; gap:10px; margin-bottom:20px; }}
+    .brand-icon {{ width:36px; height:36px; background:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center; }}
     .brand-icon svg {{ width:18px; height:18px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; }}
-    .brand-name {{ font-family:'DM Serif Display',serif; font-size:20px; color:var(--primary); letter-spacing:-0.3px; }}
-    .card {{ background:var(--surface); border-radius:20px; padding:40px 32px 36px; box-shadow:0 4px 24px rgba(10,110,110,0.08); text-align:center; }}
-    .check-circle {{
-      width:80px; height:80px; border-radius:50%;
-      background: conic-gradient(var(--accent) 0%, var(--primary) 100%);
-      display:flex; align-items:center; justify-content:center;
-      margin: 0 auto 28px;
-      animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
-    }}
+    .brand-name {{ font-size:18px; font-weight:700; color:var(--primary); }}
+    .card {{ background:var(--surface); border-radius:12px; border:1px solid var(--border); padding:32px 28px; box-shadow:0 1px 3px rgba(0,0,0,0.06); text-align:center; }}
+    .check-circle {{ width:72px; height:72px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 20px; animation:pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }}
     @keyframes pop {{ from {{ transform:scale(0); opacity:0; }} to {{ transform:scale(1); opacity:1; }} }}
-    .check-circle svg {{ width:36px; height:36px; stroke:#fff; stroke-width:2.5; fill:none; stroke-linecap:round; stroke-linejoin:round; }}
-    .check-circle svg path {{ stroke-dasharray:40; stroke-dashoffset:40; animation:draw 0.4s 0.35s ease forwards; }}
+    .check-circle svg {{ width:32px; height:32px; stroke:#fff; stroke-width:2.5; fill:none; stroke-linecap:round; stroke-linejoin:round; }}
+    .check-circle svg path {{ stroke-dasharray:40; stroke-dashoffset:40; animation:draw 0.35s 0.3s ease forwards; }}
     @keyframes draw {{ to {{ stroke-dashoffset:0; }} }}
-    h1 {{ font-family:'DM Serif Display',serif; font-size:24px; color:var(--text); margin-bottom:8px; letter-spacing:-0.3px; }}
-    .sub {{ font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:28px; }}
-    .info-grid {{ display:grid; gap:10px; text-align:left; }}
-    .info-row {{ background:#F7FAFA; border:1px solid #E0EEEE; border-radius:12px; padding:12px 16px; }}
-    .info-label {{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; }}
-    .info-value {{ font-size:14px; font-weight:600; color:var(--primary); margin-top:3px; font-family:monospace; }}
-    .ts {{ font-size:12px; color:#A0AEBB; text-align:center; margin-top:20px; }}
+    h1 {{ font-size:20px; font-weight:700; color:var(--text); margin-bottom:6px; }}
+    .sub {{ font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:24px; }}
+    .info-grid {{ display:grid; gap:8px; text-align:left; }}
+    .info-row {{ background:var(--primary-subtle); border:1px solid var(--primary-border); border-radius:8px; padding:10px 14px; }}
+    .info-label {{ font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; }}
+    .info-value {{ font-size:13px; font-weight:700; color:var(--primary); margin-top:2px; font-family:monospace; }}
+    .ts {{ font-size:12px; color:#9BA3AE; margin-top:16px; }}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="brand">
       <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-      <span class="brand-name">StepCare</span>
+      <span class="brand-name">BoostCare</span>
     </div>
     <div class="card">
       <div class="check-circle">
         <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
       </div>
       <h1>Pulseira vinculada!</h1>
-      <p class="sub">A pulseira <strong>{nome}</strong> foi vinculada com sucesso. Os dados de atividade serão sincronizados automaticamente.</p>
+      <p class="sub">A pulseira <strong>{nome}</strong> foi vinculada com sucesso.</p>
       <div class="info-grid">
         <div class="info-row">
           <div class="info-label">Apelido</div>
@@ -429,34 +191,36 @@ HTML_ERRO = """<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Erro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after {{ box-sizing:border-box; margin:0; padding:0; }}
-    :root {{ --primary:#0A6E6E; --danger:#E05A5A; --bg:#F0F4F8; --surface:#fff; --text:#1A2B3C; --muted:#6B7C93; }}
-    html, body {{ height:100%; background:var(--bg); font-family:'DM Sans',sans-serif; -webkit-font-smoothing:antialiased; }}
+    :root {{ --bg:#F4F6F8; --surface:#fff; --primary:#1c9770; --danger:#FC8181; --text:#1A202C; --muted:#6B7685; --border:#E4E7EB; }}
+    html, body {{ height:100%; background:var(--bg); font-family:'Roboto',sans-serif; -webkit-font-smoothing:antialiased; }}
     body {{ display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }}
-    .wrap {{ width:100%; max-width:400px; animation:rise 0.5s cubic-bezier(0.22,1,0.36,1) both; }}
-    @keyframes rise {{ from {{ opacity:0; transform:translateY(24px); }} to {{ opacity:1; transform:translateY(0); }} }}
-    .brand {{ display:flex; align-items:center; gap:10px; margin-bottom:28px; }}
-    .brand-icon {{ width:36px; height:36px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; }}
+    .wrap {{ width:100%; max-width:420px; animation:rise 0.4s cubic-bezier(0.22,1,0.36,1) both; }}
+    @keyframes rise {{ from {{ opacity:0; transform:translateY(20px); }} to {{ opacity:1; transform:translateY(0); }} }}
+    .brand {{ display:flex; align-items:center; gap:10px; margin-bottom:20px; }}
+    .brand-icon {{ width:36px; height:36px; background:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center; }}
     .brand-icon svg {{ width:18px; height:18px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; }}
-    .brand-name {{ font-family:'DM Serif Display',serif; font-size:20px; color:var(--primary); }}
-    .card {{ background:var(--surface); border-radius:20px; padding:40px 32px 36px; box-shadow:0 4px 24px rgba(10,110,110,0.08); text-align:center; }}
-    .err-icon {{ width:72px; height:72px; border-radius:50%; background:#FFF0F0; border:2px solid #F5C5C5; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:32px; animation:pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }}
+    .brand-name {{ font-size:18px; font-weight:700; color:var(--primary); }}
+    .card {{ background:var(--surface); border-radius:12px; border:1px solid var(--border); padding:32px 28px; box-shadow:0 1px 3px rgba(0,0,0,0.06); text-align:center; }}
+    .err-icon {{ width:64px; height:64px; border-radius:50%; background:#FFF0F0; border:1px solid #FCC; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:26px; animation:pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }}
     @keyframes pop {{ from {{ transform:scale(0); }} to {{ transform:scale(1); }} }}
-    h1 {{ font-family:'DM Serif Display',serif; font-size:22px; color:var(--danger); margin-bottom:8px; }}
-    .detail {{ font-size:13px; color:var(--muted); line-height:1.6; background:#FFF8F8; border:1px solid #F5C5C5; border-radius:10px; padding:12px 16px; margin-top:20px; text-align:left; font-family:monospace; word-break:break-all; }}
+    h1 {{ font-size:20px; font-weight:700; color:var(--danger); margin-bottom:8px; }}
+    .sub {{ font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:4px; }}
+    .detail {{ font-size:12px; color:var(--muted); background:#FFF8F8; border:1px solid #FCC; border-radius:8px; padding:10px 14px; margin-top:16px; text-align:left; font-family:monospace; word-break:break-all; line-height:1.6; }}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="brand">
       <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-      <span class="brand-name">StepCare</span>
+      <span class="brand-name">BoostCare</span>
     </div>
     <div class="card">
       <div class="err-icon">✕</div>
       <h1>{titulo}</h1>
+      <p class="sub">Algo deu errado. Tente novamente.</p>
       <div class="detail">{detalhe}</div>
     </div>
   </div>
@@ -552,7 +316,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             sucesso, msg = patch_nfc_id(device_id, nfc_id, nome)
 
             if sucesso:
-                ts = datetime.datetime.now().strftime("%d/%m/%Y às %H:%M")
+                ts = (datetime.datetime.utcnow() - datetime.timedelta(hours=3)).strftime("%d/%m/%Y às %H:%M")
                 extra = f" ({nome})" if nome else ""
                 self.send_html(200, HTML_SUCESSO.format(
                     nfc_id=nfc_id,
